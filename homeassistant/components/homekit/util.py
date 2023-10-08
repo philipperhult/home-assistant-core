@@ -258,6 +258,16 @@ def validate_entity_config(values: dict) -> dict[str, dict]:
     if not isinstance(values, dict):
         raise vol.Invalid("expected a dictionary")
 
+    schemas = {
+        "alarm_control_panel": CODE_SCHEMA,
+        "lock": CODE_SCHEMA,
+        media_player.const.DOMAIN: FEATURE_SCHEMA,
+        "camera": CAMERA_SCHEMA,
+        "switch": SWITCH_TYPE_SCHEMA,
+        "humidifier": HUMIDIFIER_SCHEMA,
+        "cover": COVER_SCHEMA,
+    }
+
     entities = {}
     for entity_id, config in values.items():
         entity = cv.entity_id(entity_id)
@@ -266,11 +276,10 @@ def validate_entity_config(values: dict) -> dict[str, dict]:
         if not isinstance(config, dict):
             raise vol.Invalid(f"The configuration for {entity} must be a dictionary.")
 
-        if domain in ("alarm_control_panel", "lock"):
-            config = CODE_SCHEMA(config)
+        schema = schemas.get(domain, BASIC_INFO_SCHEMA)
+        config = schema(config)
 
-        elif domain == media_player.const.DOMAIN:
-            config = FEATURE_SCHEMA(config)
+        if domain == media_player.const.DOMAIN:
             feature_list = {}
             for feature in config[CONF_FEATURE_LIST]:
                 params = MEDIA_PLAYER_SCHEMA(feature)
@@ -280,22 +289,8 @@ def validate_entity_config(values: dict) -> dict[str, dict]:
                 feature_list[key] = params
             config[CONF_FEATURE_LIST] = feature_list
 
-        elif domain == "camera":
-            config = CAMERA_SCHEMA(config)
-
-        elif domain == "switch":
-            config = SWITCH_TYPE_SCHEMA(config)
-
-        elif domain == "humidifier":
-            config = HUMIDIFIER_SCHEMA(config)
-
-        elif domain == "cover":
-            config = COVER_SCHEMA(config)
-
-        else:
-            config = BASIC_INFO_SCHEMA(config)
-
         entities[entity] = config
+
     return entities
 
 
