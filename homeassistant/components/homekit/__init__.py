@@ -487,7 +487,7 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
 
     # Provide HomeAssistant reference to service registrars
     def with_hass(
-        fn: Callable[[ServiceCall], Coroutine[Any, Any, ServiceResponse] | None]
+        fn: Callable[[ServiceCall, HomeAssistant], Coroutine[Any, Any, ServiceResponse] | None]
     ) -> Callable[[ServiceCall], None]:
         async def caller(sc: ServiceCall) -> None:
             await fn(sc, hass)
