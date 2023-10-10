@@ -47,6 +47,8 @@ async def async_setup_platform(
     """Read configuration and create Modbus cover."""
     if discovery_info is None:
         return
+    if config is None:
+        return
 
     covers = []
     for cover in discovery_info[CONF_COVERS]:

@@ -26,6 +26,8 @@ async def async_setup_platform(
     """Read configuration and create Modbus fans."""
     if discovery_info is None:
         return
+    if config is None:
+        return
     fans = []
 
     for entry in discovery_info[CONF_FANS]:

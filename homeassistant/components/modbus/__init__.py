@@ -412,6 +412,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_reset_platform(hass: HomeAssistant, integration_name: str) -> None:
     """Release modbus resources."""
     _LOGGER.info("Modbus reloading")
-    hubs = hass.data[DOMAIN]
+    hubs = hass.data[integration_name]
     for name in hubs:
         await hubs[name].async_close()

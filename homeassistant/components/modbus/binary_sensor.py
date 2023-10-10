@@ -39,10 +39,10 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the Modbus binary sensors."""
-
     if discovery_info is None:
         return
-
+    if config is None:
+        return
     sensors: list[ModbusBinarySensor | SlaveSensor] = []
     hub = get_hub(hass, discovery_info[CONF_NAME])
     for entry in discovery_info[CONF_BINARY_SENSORS]:

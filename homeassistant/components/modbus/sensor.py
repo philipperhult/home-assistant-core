@@ -46,6 +46,8 @@ async def async_setup_platform(
 
     if discovery_info is None:
         return
+    if config is None:
+        return
 
     sensors: list[ModbusRegisterSensor | SlaveSensor] = []
     hub = get_hub(hass, discovery_info[CONF_NAME])

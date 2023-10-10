@@ -25,7 +25,8 @@ async def async_setup_platform(
     """Read configuration and create Modbus lights."""
     if discovery_info is None:
         return
-
+    if config is None:
+        return
     lights = []
     for entry in discovery_info[CONF_LIGHTS]:
         hub: ModbusHub = get_hub(hass, discovery_info[CONF_NAME])
