@@ -399,30 +399,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ),
         )
 
+    async def handle_user_camera_config(self, user_input: dict[str, Any]):
+        entity_config = self.hk_options[CONF_ENTITY_CONFIG]
+        for entity_id in self.included_cameras:
+            if entity_id in user_input[CONF_CAMERA_COPY]:
+                entity_config.setdefault(entity_id, {})[
+                    CONF_VIDEO_CODEC
+                ] = VIDEO_CODEC_COPY
+            elif (
+                entity_id in entity_config
+                and CONF_VIDEO_CODEC in entity_config[entity_id]
+            ):
+                del entity_config[entity_id][CONF_VIDEO_CODEC]
+            if entity_id in user_input[CONF_CAMERA_AUDIO]:
+                entity_config.setdefault(entity_id, {})[CONF_SUPPORT_AUDIO] = True
+            elif (
+                entity_id in entity_config
+                and CONF_SUPPORT_AUDIO in entity_config[entity_id]
+            ):
+                del entity_config[entity_id][CONF_SUPPORT_AUDIO]
+        return await self.async_step_advanced()
+
+
     async def async_step_cameras(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Choose camera config."""
         if user_input is not None:
-            entity_config = self.hk_options[CONF_ENTITY_CONFIG]
-            for entity_id in self.included_cameras:
-                if entity_id in user_input[CONF_CAMERA_COPY]:
-                    entity_config.setdefault(entity_id, {})[
-                        CONF_VIDEO_CODEC
-                    ] = VIDEO_CODEC_COPY
-                elif (
-                    entity_id in entity_config
-                    and CONF_VIDEO_CODEC in entity_config[entity_id]
-                ):
-                    del entity_config[entity_id][CONF_VIDEO_CODEC]
-                if entity_id in user_input[CONF_CAMERA_AUDIO]:
-                    entity_config.setdefault(entity_id, {})[CONF_SUPPORT_AUDIO] = True
-                elif (
-                    entity_id in entity_config
-                    and CONF_SUPPORT_AUDIO in entity_config[entity_id]
-                ):
-                    del entity_config[entity_id][CONF_SUPPORT_AUDIO]
-            return await self.async_step_advanced()
+            return await self.handle_user_camera_config(user_input)
 
         cameras_with_audio = []
         cameras_with_copy = []
