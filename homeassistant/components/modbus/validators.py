@@ -168,6 +168,39 @@ def nan_validator(value: Any) -> int:
         raise vol.Invalid(f"invalid number {value}") from err
 
 
+def adjust_timeout(hub, minimum_scan_interval):
+    if (
+        CONF_TIMEOUT in hub
+        and hub[CONF_TIMEOUT] > minimum_scan_interval - 1
+        and minimum_scan_interval > 1
+    ):
+        _LOGGER.warning(
+            "Modbus %s timeout(%d) is adjusted(%d) due to scan_interval",
+            hub.get(CONF_NAME, ""),
+            hub[CONF_TIMEOUT],
+            minimum_scan_interval - 1,
+        )
+        hub[CONF_TIMEOUT] = minimum_scan_interval - 1
+
+
+def adjust_scan_interval(entry, component):
+    scan_interval = entry.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    if scan_interval == 0:
+        return
+    if scan_interval < 5:
+        _LOGGER.warning(
+            (
+                "%s %s scan_interval(%d) is lower than 5 seconds, "
+                "which may cause Home Assistant stability issues"
+            ),
+            component,
+            entry.get(CONF_NAME),
+            scan_interval,
+        )
+    entry[CONF_SCAN_INTERVAL] = scan_interval
+    return scan_interval
+
+
 def scan_interval_validator(config: dict) -> dict:
     """Control scan_interval."""
     for hub in config:
@@ -177,33 +210,12 @@ def scan_interval_validator(config: dict) -> dict:
                 continue
 
             for entry in hub[conf_key]:
-                scan_interval = entry.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-                if scan_interval == 0:
-                    continue
-                if scan_interval < 5:
-                    _LOGGER.warning(
-                        (
-                            "%s %s scan_interval(%d) is lower than 5 seconds, "
-                            "which may cause Home Assistant stability issues"
-                        ),
-                        component,
-                        entry.get(CONF_NAME),
-                        scan_interval,
-                    )
-                entry[CONF_SCAN_INTERVAL] = scan_interval
-                minimum_scan_interval = min(scan_interval, minimum_scan_interval)
-        if (
-            CONF_TIMEOUT in hub
-            and hub[CONF_TIMEOUT] > minimum_scan_interval - 1
-            and minimum_scan_interval > 1
-        ):
-            _LOGGER.warning(
-                "Modbus %s timeout(%d) is adjusted(%d) due to scan_interval",
-                hub.get(CONF_NAME, ""),
-                hub[CONF_TIMEOUT],
-                minimum_scan_interval - 1,
-            )
-            hub[CONF_TIMEOUT] = minimum_scan_interval - 1
+                scan_interval = adjust_scan_interval(entry, component)
+                if scan_interval:
+                    minimum_scan_interval = min(scan_interval, minimum_scan_interval)
+
+        adjust_timeout(hub, minimum_scan_interval)
+
     return config
 
 

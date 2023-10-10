@@ -206,6 +206,16 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
             return 0
         return val
 
+    def check_v_temp(self, v_temp) -> str:
+        if isinstance(v_temp, int) and self._precision == 0:
+            return str(v_temp)
+        elif v_temp is None:
+            return "0"
+        elif math.isnan(v_temp):
+            # NaN float detection replace with None
+            return "0"
+        return f"{float(v_temp):.{self._precision}f}"
+
     def unpack_structure_result(self, registers: list[int]) -> str | None:
         """Convert registers to proper result."""
 
@@ -230,19 +240,7 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
             v_result = []
             for entry in val:
                 v_temp = self.__process_raw_value(entry)
-
-                # We could convert int to float, and the code would still work; however
-                # we lose some precision, and unit tests will fail. Therefore, we do
-                # the conversion only when it's absolutely necessary.
-                if isinstance(v_temp, int) and self._precision == 0:
-                    v_result.append(str(v_temp))
-                elif v_temp is None:
-                    v_result.append("0")
-                elif math.isnan(v_temp):  # noqa: PLR0124
-                    # NaN float detection replace with None
-                    v_result.append("0")
-                else:
-                    v_result.append(f"{float(v_temp):.{self._precision}f}")
+                v_result.append(self.check_v_temp(v_temp))
             return ",".join(map(str, v_result))
 
         # NaN float detection replace with None

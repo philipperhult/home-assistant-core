@@ -107,31 +107,7 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
         self._attr_target_temperature_step = config[CONF_STEP]
 
         if CONF_HVAC_MODE_REGISTER in config:
-            mode_config = config[CONF_HVAC_MODE_REGISTER]
-            self._hvac_mode_register = mode_config[CONF_ADDRESS]
-            self._attr_hvac_modes = cast(list[HVACMode], [])
-            self._attr_hvac_mode = None
-            self._hvac_mode_mapping: list[tuple[int, HVACMode]] = []
-            self._hvac_mode_write_registers = mode_config[CONF_WRITE_REGISTERS]
-            mode_value_config = mode_config[CONF_HVAC_MODE_VALUES]
-
-            for hvac_mode_kw, hvac_mode in (
-                (CONF_HVAC_MODE_OFF, HVACMode.OFF),
-                (CONF_HVAC_MODE_HEAT, HVACMode.HEAT),
-                (CONF_HVAC_MODE_COOL, HVACMode.COOL),
-                (CONF_HVAC_MODE_HEAT_COOL, HVACMode.HEAT_COOL),
-                (CONF_HVAC_MODE_AUTO, HVACMode.AUTO),
-                (CONF_HVAC_MODE_DRY, HVACMode.DRY),
-                (CONF_HVAC_MODE_FAN_ONLY, HVACMode.FAN_ONLY),
-            ):
-                if hvac_mode_kw in mode_value_config:
-                    values = mode_value_config[hvac_mode_kw]
-                    if not isinstance(values, list):
-                        values = [values]
-                    for value in values:
-                        self._hvac_mode_mapping.append((value, hvac_mode))
-                    self._attr_hvac_modes.append(hvac_mode)
-
+            self.init_hvac_mode_register(config)
         else:
             # No HVAC modes defined
             self._hvac_mode_register = None
@@ -146,12 +122,57 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
         else:
             self._hvac_onoff_register = None
 
+    def init_hvac_mode_register(self, config):
+        mode_config = config[CONF_HVAC_MODE_REGISTER]
+        self._hvac_mode_register = mode_config[CONF_ADDRESS]
+        self._attr_hvac_modes = cast(list[HVACMode], [])
+        self._attr_hvac_mode = None
+        self._hvac_mode_mapping: list[tuple[int, HVACMode]] = []
+        self._hvac_mode_write_registers = mode_config[CONF_WRITE_REGISTERS]
+        mode_value_config = mode_config[CONF_HVAC_MODE_VALUES]
+
+        for hvac_mode_kw, hvac_mode in (
+            (CONF_HVAC_MODE_OFF, HVACMode.OFF),
+            (CONF_HVAC_MODE_HEAT, HVACMode.HEAT),
+            (CONF_HVAC_MODE_COOL, HVACMode.COOL),
+            (CONF_HVAC_MODE_HEAT_COOL, HVACMode.HEAT_COOL),
+            (CONF_HVAC_MODE_AUTO, HVACMode.AUTO),
+            (CONF_HVAC_MODE_DRY, HVACMode.DRY),
+            (CONF_HVAC_MODE_FAN_ONLY, HVACMode.FAN_ONLY),
+        ):
+            if hvac_mode_kw in mode_value_config:
+                values = mode_value_config[hvac_mode_kw]
+                if not isinstance(values, list):
+                    values = [values]
+                for value in values:
+                    self._hvac_mode_mapping.append((value, hvac_mode))
+                self._attr_hvac_modes.append(hvac_mode)
+
     async def async_added_to_hass(self) -> None:
         """Handle entity which will be added."""
         await self.async_base_added_to_hass()
         state = await self.async_get_last_state()
         if state and state.attributes.get(ATTR_TEMPERATURE):
             self._attr_target_temperature = float(state.attributes[ATTR_TEMPERATURE])
+
+    async def write_value_for_mode(self, hvac_mode) -> None:
+        for value, mode in self._hvac_mode_mapping:
+            if mode == hvac_mode:
+                if self._hvac_mode_write_registers:
+                    await self._hub.async_pb_call(
+                        self._slave,
+                        self._hvac_mode_register,
+                        [value],
+                        CALL_TYPE_WRITE_REGISTERS,
+                    )
+                else:
+                    await self._hub.async_pb_call(
+                        self._slave,
+                        self._hvac_mode_register,
+                        value,
+                        CALL_TYPE_WRITE_REGISTER,
+                    )
+                break
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
@@ -174,23 +195,7 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
 
         if self._hvac_mode_register is not None:
             # Write a value to the mode register for the desired mode.
-            for value, mode in self._hvac_mode_mapping:
-                if mode == hvac_mode:
-                    if self._hvac_mode_write_registers:
-                        await self._hub.async_pb_call(
-                            self._slave,
-                            self._hvac_mode_register,
-                            [value],
-                            CALL_TYPE_WRITE_REGISTERS,
-                        )
-                    else:
-                        await self._hub.async_pb_call(
-                            self._slave,
-                            self._hvac_mode_register,
-                            value,
-                            CALL_TYPE_WRITE_REGISTER,
-                        )
-                    break
+            await self.write_value_for_mode(hvac_mode)
 
         await self.async_update()
 
