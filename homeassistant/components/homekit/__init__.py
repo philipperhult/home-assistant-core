@@ -413,46 +413,46 @@ def _async_import_options_from_data_if_missing(
 
 
 async def async_handle_homekit_reset_accessory(
-    service: ServiceCall, hass: HomeAssistant
-) -> None:
-    """Handle reset accessory HomeKit service call."""
-    for homekit in _async_all_homekit_instances(hass):
-        if homekit.status != STATUS_RUNNING:
-            _LOGGER.warning(
-                "HomeKit is not running. Either it is waiting to be "
-                "started or has been stopped"
-            )
-            continue
+        service: ServiceCall, hass: HomeAssistant,
+    ) -> None:
+        """Handle reset accessory HomeKit service call."""
+        for homekit in _async_all_homekit_instances(hass):
+            if homekit.status != STATUS_RUNNING:
+                _LOGGER.warning(
+                    "HomeKit is not running. Either it is waiting to be "
+                    "started or has been stopped"
+                )
+                continue
 
-        entity_ids = cast(list[str], service.data.get("entity_id"))
-        await homekit.async_reset_accessories(entity_ids)
+            entity_ids = cast(list[str], service.data.get("entity_id"))
+            await homekit.async_reset_accessories(entity_ids)
 
 
 async def async_handle_homekit_unpair(
-    service: ServiceCall, hass: HomeAssistant
-) -> None:
-    """Handle unpair HomeKit service call."""
-    referenced = async_extract_referenced_entity_ids(hass, service)
-    dev_reg = dr.async_get(hass)
-    for device_id in referenced.referenced_devices:
-        if not (dev_reg_ent := dev_reg.async_get(device_id)):
-            raise HomeAssistantError(f"No device found for device id: {device_id}")
-        macs = [
-            cval
-            for ctype, cval in dev_reg_ent.connections
-            if ctype == dr.CONNECTION_NETWORK_MAC
-        ]
-        matching_instances = [
-            homekit
-            for homekit in _async_all_homekit_instances(hass)
-            if homekit.driver and dr.format_mac(homekit.driver.state.mac) in macs
-        ]
-        if not matching_instances:
-            raise HomeAssistantError(
-                f"No homekit accessory found for device id: {device_id}"
-            )
-        for homekit in matching_instances:
-            homekit.async_unpair()
+        service: ServiceCall, hass: HomeAssistant
+    ) -> None:
+        """Handle unpair HomeKit service call."""
+        referenced = async_extract_referenced_entity_ids(hass, service)
+        dev_reg = dr.async_get(hass)
+        for device_id in referenced.referenced_devices:
+            if not (dev_reg_ent := dev_reg.async_get(device_id)):
+                raise HomeAssistantError(f"No device found for device id: {device_id}")
+            macs = [
+                cval
+                for ctype, cval in dev_reg_ent.connections
+                if ctype == dr.CONNECTION_NETWORK_MAC
+            ]
+            matching_instances = [
+                homekit
+                for homekit in _async_all_homekit_instances(hass)
+                if homekit.driver and dr.format_mac(homekit.driver.state.mac) in macs
+            ]
+            if not matching_instances:
+                raise HomeAssistantError(
+                    f"No homekit accessory found for device id: {device_id}"
+                )
+            for homekit in matching_instances:
+                homekit.async_unpair()
 
 
 async def _handle_homekit_reload(service: ServiceCall, hass: HomeAssistant) -> None:
@@ -480,20 +480,21 @@ async def _handle_homekit_reload(service: ServiceCall, hass: HomeAssistant) -> N
     await asyncio.gather(*reload_tasks)
 
 
-def with_hass(
-        service_func: Callable[
-            [ServiceCall, HomeAssistant], Coroutine[Any, Any, ServiceResponse] | None
-        ],
-    ):
-        async def runner(service: ServiceCall):
-            service_func(service, hass)
-
-        return runner
-
 @callback
 def _async_register_events_and_services(hass: HomeAssistant) -> None:
     """Register events and services for HomeKit."""
     hass.http.register_view(HomeKitPairingQRView)
+
+
+
+    # Provide HomeAssistant reference to service registrars
+    def with_hass(fn: Callable[
+            [ServiceCall], Coroutine[Any, Any, ServiceResponse] | None
+        ]) -> Callable[[ServiceCall], None]:
+        async def caller(sc: ServiceCall) -> None:
+            await fn(sc, hass)
+        return caller
+
 
     hass.services.async_register(
         DOMAIN,
@@ -513,7 +514,7 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
         hass,
         DOMAIN,
         SERVICE_RELOAD,
-        with_hass(_handle_homekit_reload),
+        with_hass(_handle_homekit_reload)
     )
 
 
