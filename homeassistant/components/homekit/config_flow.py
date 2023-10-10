@@ -399,7 +399,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ),
         )
 
-    async def handle_user_camera_config(self, user_input: dict[str, Any]):
+    async def __handle_user_camera_config(self, user_input: dict[str, Any]):
         entity_config = self.hk_options[CONF_ENTITY_CONFIG]
         for entity_id in self.included_cameras:
             if entity_id in user_input[CONF_CAMERA_COPY]:
@@ -420,13 +420,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 del entity_config[entity_id][CONF_SUPPORT_AUDIO]
         return await self.async_step_advanced()
 
-
     async def async_step_cameras(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Choose camera config."""
         if user_input is not None:
-            return await self.handle_user_camera_config(user_input)
+            return await self.__handle_user_camera_config(user_input)
 
         cameras_with_audio = []
         cameras_with_copy = []
