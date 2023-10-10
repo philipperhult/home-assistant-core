@@ -41,6 +41,8 @@ from .const import (
     CHAR_ON,
     CHAR_OUTLET_IN_USE,
     CHAR_VALVE_TYPE,
+    LOG_SET_CURRENT_STATE,
+    LOG_SET_SWITCH_STATE,
     SERV_OUTLET,
     SERV_SWITCH,
     SERV_VALVE,
@@ -96,7 +98,7 @@ class Outlet(HomeAccessory):
 
     def set_state(self, value):
         """Move switch state to value if call came from HomeKit."""
-        _LOGGER.debug("%s: Set switch state to %s", self.entity_id, value)
+        _LOGGER.debug(LOG_SET_SWITCH_STATE, self.entity_id, value)
         params = {ATTR_ENTITY_ID: self.entity_id}
         service = SERVICE_TURN_ON if value else SERVICE_TURN_OFF
         self.async_call_service(DOMAIN, service, params)
@@ -105,7 +107,7 @@ class Outlet(HomeAccessory):
     def async_update_state(self, new_state):
         """Update switch state after state changed."""
         current_state = new_state.state == STATE_ON
-        _LOGGER.debug("%s: Set current state to %s", self.entity_id, current_state)
+        _LOGGER.debug(LOG_SET_CURRENT_STATE, self.entity_id, current_state)
         self.char_on.set_value(current_state)
 
 
@@ -140,7 +142,7 @@ class Switch(HomeAccessory):
 
     def set_state(self, value):
         """Move switch state to value if call came from HomeKit."""
-        _LOGGER.debug("%s: Set switch state to %s", self.entity_id, value)
+        _LOGGER.debug(LOG_SET_SWITCH_STATE, self.entity_id, value)
         if self.activate_only and not value:
             _LOGGER.debug("%s: Ignoring turn_off call", self.entity_id)
             return
@@ -172,7 +174,7 @@ class Switch(HomeAccessory):
             return
 
         current_state = new_state.state == STATE_ON
-        _LOGGER.debug("%s: Set current state to %s", self.entity_id, current_state)
+        _LOGGER.debug(LOG_SET_CURRENT_STATE, self.entity_id, current_state)
         self.char_on.set_value(current_state)
 
 
@@ -182,7 +184,7 @@ class Vacuum(Switch):
 
     def set_state(self, value):
         """Move switch state to value if call came from HomeKit."""
-        _LOGGER.debug("%s: Set switch state to %s", self.entity_id, value)
+        _LOGGER.debug(LOG_SET_SWITCH_STATE, self.entity_id, value)
         state = self.hass.states.get(self.entity_id)
         features = state.attributes.get(ATTR_SUPPORTED_FEATURES, 0)
 
@@ -201,7 +203,7 @@ class Vacuum(Switch):
     def async_update_state(self, new_state):
         """Update switch state after state changed."""
         current_state = new_state.state in (STATE_CLEANING, STATE_ON)
-        _LOGGER.debug("%s: Set current state to %s", self.entity_id, current_state)
+        _LOGGER.debug(LOG_SET_CURRENT_STATE, self.entity_id, current_state)
         self.char_on.set_value(current_state)
 
 
@@ -230,7 +232,7 @@ class Valve(HomeAccessory):
 
     def set_state(self, value):
         """Move value state to value if call came from HomeKit."""
-        _LOGGER.debug("%s: Set switch state to %s", self.entity_id, value)
+        _LOGGER.debug(LOG_SET_SWITCH_STATE, self.entity_id, value)
         self.char_in_use.set_value(value)
         params = {ATTR_ENTITY_ID: self.entity_id}
         service = SERVICE_TURN_ON if value else SERVICE_TURN_OFF

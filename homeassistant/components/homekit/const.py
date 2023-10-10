@@ -298,3 +298,12 @@ MAX_SERIAL_LENGTH = 64
 MAX_MODEL_LENGTH = 64
 MAX_VERSION_LENGTH = 64
 MAX_MANUFACTURER_LENGTH = 64
+
+# ### Logger Debug Message formating ###
+LOG_AIR_QUALITY = "%s: Set air_quality to %d"
+LOG_DENSITY = "%s: Set density to %d"
+LOG_SET = "%s: Set to %d"
+LOG_PERCENT = "%s: Percent set to %d%%"
+LOG_TEMPERATURE = "%s: Current temperature set to %.1f°C"
+LOG_SET_SWITCH_STATE = "%s: Set switch state to %s"
+LOG_SET_CURRENT_STATE = "%s: Set current state to %s"

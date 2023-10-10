@@ -79,12 +79,12 @@ class MatterEventEntity(MatterEntity, EventEntity):
         ):
             for label in labels:
                 if label.label == "Label":
-                    label_value: str = label.value
-                    # in the case the label is only the label id, prettify it a bit
-                    if label_value.isnumeric():
-                        self._attr_name = f"Button {label_value}"
-                    else:
-                        self._attr_name = label_value
+                    label_value = label.value
+                    self._attr_name = (
+                        f"Button {label_value}"
+                        if label_value.isnumeric()
+                        else label_value
+                    )
                     break
 
     async def async_added_to_hass(self) -> None:

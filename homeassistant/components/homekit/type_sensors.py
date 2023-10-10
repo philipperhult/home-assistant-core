@@ -40,6 +40,11 @@ from .const import (
     CHAR_PM25_DENSITY,
     CHAR_SMOKE_DETECTED,
     CHAR_VOC_DENSITY,
+    LOG_AIR_QUALITY,
+    LOG_DENSITY,
+    LOG_PERCENT,
+    LOG_SET,
+    LOG_TEMPERATURE,
     PROP_CELSIUS,
     PROP_MAX_VALUE,
     PROP_MIN_VALUE,
@@ -133,9 +138,7 @@ class TemperatureSensor(HomeAccessory):
         if (temperature := convert_to_float(new_state.state)) is not None:
             temperature = temperature_to_homekit(temperature, unit)
             self.char_temp.set_value(temperature)
-            _LOGGER.debug(
-                "%s: Current temperature set to %.1f°C", self.entity_id, temperature
-            )
+            _LOGGER.debug(LOG_TEMPERATURE, self.entity_id, temperature)
 
 
 @TYPES.register("HumiditySensor")
@@ -159,7 +162,7 @@ class HumiditySensor(HomeAccessory):
         """Update accessory after state change."""
         if (humidity := convert_to_float(new_state.state)) is not None:
             self.char_humidity.set_value(humidity)
-            _LOGGER.debug("%s: Percent set to %d%%", self.entity_id, humidity)
+            _LOGGER.debug(LOG_PERCENT, self.entity_id, humidity)
 
 
 @TYPES.register("AirQualitySensor")
@@ -193,10 +196,10 @@ class AirQualitySensor(HomeAccessory):
         if (density := convert_to_float(new_state.state)) is not None:
             if self.char_density.value != density:
                 self.char_density.set_value(density)
-                _LOGGER.debug("%s: Set density to %d", self.entity_id, density)
+                _LOGGER.debug(LOG_DENSITY, self.entity_id, density)
             air_quality = density_to_air_quality(density)
             self.char_quality.set_value(air_quality)
-            _LOGGER.debug("%s: Set air_quality to %d", self.entity_id, air_quality)
+            _LOGGER.debug(LOG_AIR_QUALITY, self.entity_id, air_quality)
 
 
 @TYPES.register("PM10Sensor")
@@ -219,11 +222,11 @@ class PM10Sensor(AirQualitySensor):
             return
         if self.char_density.value != density:
             self.char_density.set_value(density)
-            _LOGGER.debug("%s: Set density to %d", self.entity_id, density)
+            _LOGGER.debug(LOG_DENSITY, self.entity_id, density)
         air_quality = density_to_air_quality_pm10(density)
         if self.char_quality.value != air_quality:
             self.char_quality.set_value(air_quality)
-            _LOGGER.debug("%s: Set air_quality to %d", self.entity_id, air_quality)
+            _LOGGER.debug(LOG_AIR_QUALITY, self.entity_id, air_quality)
 
 
 @TYPES.register("PM25Sensor")
@@ -246,11 +249,11 @@ class PM25Sensor(AirQualitySensor):
             return
         if self.char_density.value != density:
             self.char_density.set_value(density)
-            _LOGGER.debug("%s: Set density to %d", self.entity_id, density)
+            _LOGGER.debug(LOG_DENSITY, self.entity_id, density)
         air_quality = density_to_air_quality(density)
         if self.char_quality.value != air_quality:
             self.char_quality.set_value(air_quality)
-            _LOGGER.debug("%s: Set air_quality to %d", self.entity_id, air_quality)
+            _LOGGER.debug(LOG_AIR_QUALITY, self.entity_id, air_quality)
 
 
 @TYPES.register("NitrogenDioxideSensor")
@@ -275,11 +278,11 @@ class NitrogenDioxideSensor(AirQualitySensor):
             return
         if self.char_density.value != density:
             self.char_density.set_value(density)
-            _LOGGER.debug("%s: Set density to %d", self.entity_id, density)
+            _LOGGER.debug(LOG_DENSITY, self.entity_id, density)
         air_quality = density_to_air_quality_nitrogen_dioxide(density)
         if self.char_quality.value != air_quality:
             self.char_quality.set_value(air_quality)
-            _LOGGER.debug("%s: Set air_quality to %d", self.entity_id, air_quality)
+            _LOGGER.debug(LOG_AIR_QUALITY, self.entity_id, air_quality)
 
 
 @TYPES.register("VolatileOrganicCompoundsSensor")
@@ -312,11 +315,11 @@ class VolatileOrganicCompoundsSensor(AirQualitySensor):
             return
         if self.char_density.value != density:
             self.char_density.set_value(density)
-            _LOGGER.debug("%s: Set density to %d", self.entity_id, density)
+            _LOGGER.debug(LOG_DENSITY, self.entity_id, density)
         air_quality = density_to_air_quality_voc(density)
         if self.char_quality.value != air_quality:
             self.char_quality.set_value(air_quality)
-            _LOGGER.debug("%s: Set air_quality to %d", self.entity_id, air_quality)
+            _LOGGER.debug(LOG_AIR_QUALITY, self.entity_id, air_quality)
 
 
 @TYPES.register("CarbonMonoxideSensor")
@@ -351,7 +354,7 @@ class CarbonMonoxideSensor(HomeAccessory):
                 self.char_peak.set_value(value)
             co_detected = value > THRESHOLD_CO
             self.char_detected.set_value(co_detected)
-            _LOGGER.debug("%s: Set to %d", self.entity_id, value)
+            _LOGGER.debug(LOG_SET, self.entity_id, value)
 
 
 @TYPES.register("CarbonDioxideSensor")
@@ -386,7 +389,7 @@ class CarbonDioxideSensor(HomeAccessory):
                 self.char_peak.set_value(value)
             co2_detected = value > THRESHOLD_CO2
             self.char_detected.set_value(co2_detected)
-            _LOGGER.debug("%s: Set to %d", self.entity_id, value)
+            _LOGGER.debug(LOG_SET, self.entity_id, value)
 
 
 @TYPES.register("LightSensor")
@@ -410,7 +413,7 @@ class LightSensor(HomeAccessory):
         """Update accessory after state change."""
         if (luminance := convert_to_float(new_state.state)) is not None:
             self.char_light.set_value(luminance)
-            _LOGGER.debug("%s: Set to %d", self.entity_id, luminance)
+            _LOGGER.debug(LOG_SET, self.entity_id, luminance)
 
 
 @TYPES.register("BinarySensor")
@@ -444,4 +447,4 @@ class BinarySensor(HomeAccessory):
         state = new_state.state
         detected = self.format(state in (STATE_ON, STATE_HOME))
         self.char_detected.set_value(detected)
-        _LOGGER.debug("%s: Set to %d", self.entity_id, detected)
+        _LOGGER.debug(LOG_SET, self.entity_id, detected)
