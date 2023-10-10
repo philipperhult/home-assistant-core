@@ -73,9 +73,8 @@ def struct_validator(config: dict[str, Any]) -> dict[str, Any]:
     ):
         error = f"{name}  {CONF_COUNT} cannot be mixed with {data_type}"
         raise vol.Invalid(error)
-    if config[CONF_DATA_TYPE] != DataType.CUSTOM:
-        if structure:
-            error = f"{name}  structure: cannot be mixed with {data_type}"
+    if config[CONF_DATA_TYPE] != DataType.CUSTOM and structure:
+        error = f"{name}  structure: cannot be mixed with {data_type}"
 
     if config[CONF_DATA_TYPE] == DataType.CUSTOM:
         if slave_count > 1:

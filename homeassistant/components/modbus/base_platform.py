@@ -5,6 +5,7 @@ from abc import abstractmethod
 from collections.abc import Callable
 from datetime import datetime, timedelta
 import logging
+import math
 import struct
 from typing import Any, cast
 
@@ -237,7 +238,7 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
                     v_result.append(str(v_temp))
                 elif v_temp is None:
                     v_result.append("0")
-                elif v_temp != v_temp:  # noqa: PLR0124
+                elif math.isnan(v_temp):  # noqa: PLR0124
                     # NaN float detection replace with None
                     v_result.append("0")
                 else:
@@ -383,7 +384,7 @@ class BaseSwitch(BasePlatform, ToggleEntity, RestoreEntity):
                 self._attr_is_on = True
             elif value == self._state_off:
                 self._attr_is_on = False
-            elif value is not None:
+            else:
                 _LOGGER.error(
                     (
                         "Unexpected response from modbus device slave %s register %s,"
