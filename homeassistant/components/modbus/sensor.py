@@ -38,7 +38,7 @@ PARALLEL_UPDATES = 1
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType | None,
+    config: ConfigType,
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
@@ -46,8 +46,7 @@ async def async_setup_platform(
 
     if discovery_info is None:
         return
-    if config is None:
-        return
+    _ = config
 
     sensors: list[ModbusRegisterSensor | SlaveSensor] = []
     hub = get_hub(hass, discovery_info[CONF_NAME])

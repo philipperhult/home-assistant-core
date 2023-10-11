@@ -19,15 +19,14 @@ PARALLEL_UPDATES = 1
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType | None,
+    config: ConfigType,
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Read configuration and create Modbus fans."""
     if discovery_info is None:
         return
-    if config is None:
-        return
+    _ = config
     fans = []
 
     for entry in discovery_info[CONF_FANS]:
