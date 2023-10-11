@@ -194,9 +194,8 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
                     0 if hvac_mode == HVACMode.OFF else 1,
                     CALL_TYPE_WRITE_REGISTER,
                 )
-        if self._hvac_mode_register is not None:
-            # Write a value to the mode register for the desired mode.
-            await self.write_value_for_mode(hvac_mode)
+
+        await self.write_value_for_mode(hvac_mode)
 
         await self.async_update()
 
@@ -266,18 +265,18 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
         )
 
         # Read the mode register if defined
-        if self._hvac_mode_register is not None:
-            hvac_mode = await self._async_read_register(
-                CALL_TYPE_REGISTER_HOLDING, self._hvac_mode_register, raw=True
-            )
 
-            # Translate the value received
-            if hvac_mode is not None:
-                self._attr_hvac_mode = None
-                for value, mode in self._hvac_mode_mapping:
-                    if hvac_mode == value:
-                        self._attr_hvac_mode = mode
-                        break
+        hvac_mode = await self._async_read_register(
+            CALL_TYPE_REGISTER_HOLDING, self._hvac_mode_register, raw=True
+        )
+
+        # Translate the value received
+        if hvac_mode is not None:
+            self._attr_hvac_mode = None
+            for value, mode in self._hvac_mode_mapping:
+                if hvac_mode == value:
+                    self._attr_hvac_mode = mode
+                    break
 
         # Read th on/off register if defined. If the value in this
         # register is "OFF", it will take precedence over the value

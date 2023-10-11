@@ -206,13 +206,13 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
             return 0
         return val
 
-    def check_v_temp(self, v_temp: SupportsFloat) -> str:
+    def check_v_temp(self, v_temp: float | int | str | bytes | None) -> str:
         """Check valid values for v_temp."""
         if isinstance(v_temp, int) and self._precision == 0:
             return str(v_temp)
         elif v_temp is None:
             return "0"
-        elif math.isnan(v_temp):
+        elif math.isnan(SupportsFloat(v_temp)):
             # NaN float detection replace with None
             return "0"
         return f"{float(v_temp):.{self._precision}f}"
