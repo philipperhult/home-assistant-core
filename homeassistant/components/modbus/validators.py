@@ -168,7 +168,7 @@ def nan_validator(value: Any) -> int:
         raise vol.Invalid(f"invalid number {value}") from err
 
 
-def adjust_timeout(hub, minimum_scan_interval):
+def adjust_timeout(hub: Any, minimum_scan_interval: int) -> None:
     """Timeout"""
     if (
         CONF_TIMEOUT in hub
@@ -184,7 +184,7 @@ def adjust_timeout(hub, minimum_scan_interval):
         hub[CONF_TIMEOUT] = minimum_scan_interval - 1
 
 
-def adjust_scan_interval(entry, component):
+def adjust_scan_interval(entry: Any, component: Any) -> int:
     """Scan interval"""
     scan_interval = entry.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     if scan_interval == 0:
