@@ -56,15 +56,16 @@ PARALLEL_UPDATES = 1
 
 async def async_setup_platform(
     hass: HomeAssistant,
-    config: ConfigType | None,
+    config: ConfigType,
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Read configuration and create Modbus climate."""
     if discovery_info is None:
         return
-    if config is None:
-        return
+    
+    _ = config
+
     entities = []
     for entity in discovery_info[CONF_CLIMATES]:
         hub: ModbusHub = get_hub(hass, discovery_info[CONF_NAME])

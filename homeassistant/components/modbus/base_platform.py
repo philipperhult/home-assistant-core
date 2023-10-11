@@ -210,13 +210,12 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
         """Check valid values for v_temp."""
         if isinstance(v_temp, int) and self._precision == 0:
             return str(v_temp)
-        elif v_temp is None:
+        if v_temp is None:
             return "0"
-        elif isinstance(v_temp, (float, int)) and math.isnan(v_temp):
+        if isinstance(v_temp, (float, int)) and math.isnan(v_temp):
             # NaN float detection replace with None
             return "0"
-        else:
-            return f"{float(v_temp):.{self._precision}f}"
+        return f"{float(v_temp):.{self._precision}f}"
 
     def unpack_structure_result(self, registers: list[int]) -> str | None:
         """Convert registers to proper result."""
