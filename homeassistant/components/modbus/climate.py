@@ -123,6 +123,7 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
             self._hvac_onoff_register = None
 
     def init_hvac_mode_register(self, config):
+        """Sperated init code"""
         mode_config = config[CONF_HVAC_MODE_REGISTER]
         self._hvac_mode_register = mode_config[CONF_ADDRESS]
         self._attr_hvac_modes = cast(list[HVACMode], [])
@@ -156,6 +157,7 @@ class ModbusThermostat(BaseStructPlatform, RestoreEntity, ClimateEntity):
             self._attr_target_temperature = float(state.attributes[ATTR_TEMPERATURE])
 
     async def write_value_for_mode(self, hvac_mode) -> None:
+        """Setting values based on hvac mode"""
         for value, mode in self._hvac_mode_mapping:
             if mode == hvac_mode:
                 if self._hvac_mode_write_registers:

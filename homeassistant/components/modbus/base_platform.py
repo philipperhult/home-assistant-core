@@ -207,6 +207,7 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
         return val
 
     def check_v_temp(self, v_temp) -> str:
+        """Checking valid values for v_temp"""
         if isinstance(v_temp, int) and self._precision == 0:
             return str(v_temp)
         elif v_temp is None:
