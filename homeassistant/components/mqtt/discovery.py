@@ -355,9 +355,7 @@ def async_process_discovery_payload(
         async_dispatcher_send(hass, MQTT_DISCOVERY_DONE.format(discovery_hash), None)
 
 
-async def async_start(  # noqa: C901
-    hass: HomeAssistant, discovery_topic: str
-) -> None:
+async def async_start(hass: HomeAssistant, discovery_topic: str) -> None:  # noqa: C901
     """Start MQTT Discovery."""
     mqtt_data = get_mqtt_data(hass)
     mqtt_integrations = {}
