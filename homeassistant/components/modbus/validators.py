@@ -188,7 +188,7 @@ def adjust_scan_interval(entry: Any, component: Any) -> int:
     """Scan interval"""
     scan_interval = entry.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     if scan_interval == 0:
-        return
+        return 0
     if scan_interval < 5:
         _LOGGER.warning(
             (
@@ -200,7 +200,7 @@ def adjust_scan_interval(entry: Any, component: Any) -> int:
             scan_interval,
         )
     entry[CONF_SCAN_INTERVAL] = scan_interval
-    return scan_interval
+    return int(scan_interval)
 
 
 def scan_interval_validator(config: dict) -> dict:

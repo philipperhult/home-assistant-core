@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import logging
 import math
 import struct
-from typing import Any, cast
+from typing import Any, SupportsFloat, cast
 
 from homeassistant.const import (
     CONF_ADDRESS,
@@ -206,8 +206,8 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
             return 0
         return val
 
-    def check_v_temp(self, v_temp: float | int | str | bytes | None) -> str:
-        """Checking valid values for v_temp"""
+    def check_v_temp(self, v_temp: SupportsFloat) -> str:
+        """Check valid values for v_temp"""
         if isinstance(v_temp, int) and self._precision == 0:
             return str(v_temp)
         elif v_temp is None:

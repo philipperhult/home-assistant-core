@@ -406,7 +406,7 @@ class ModbusHub:
     async def async_pb_call(
         self,
         unit: int | None,
-        address: int,
+        address: int | None,
         value: int | list[int],
         use_call: str,
     ) -> ModbusResponse | None:
