@@ -401,7 +401,7 @@ async def async_forward_entry_setup_and_setup_discovery(
     # Setup discovery
     if conf.get(CONF_DISCOVERY, DEFAULT_DISCOVERY):
         await discovery.async_start(
-            hass, conf.get(CONF_DISCOVERY_PREFIX, DEFAULT_PREFIX), config_entry
+            hass, conf.get(CONF_DISCOVERY_PREFIX, DEFAULT_PREFIX)
         )
     # Setup reload service after all platforms have loaded
     await async_setup_reload_service(hass, mqtt_data)
