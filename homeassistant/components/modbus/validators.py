@@ -169,7 +169,7 @@ def nan_validator(value: Any) -> int:
 
 
 def adjust_timeout(hub: Any, minimum_scan_interval: int) -> None:
-    """Timeout"""
+    """Timeout."""
     if (
         CONF_TIMEOUT in hub
         and hub[CONF_TIMEOUT] > minimum_scan_interval - 1
@@ -185,7 +185,7 @@ def adjust_timeout(hub: Any, minimum_scan_interval: int) -> None:
 
 
 def adjust_scan_interval(entry: Any, component: Any) -> int:
-    """Scan interval"""
+    """Scan interval."""
     scan_interval = entry.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     if scan_interval == 0:
         return 0
