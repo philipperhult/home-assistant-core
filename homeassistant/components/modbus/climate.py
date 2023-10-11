@@ -63,7 +63,6 @@ async def async_setup_platform(
     """Read configuration and create Modbus climate."""
     if discovery_info is None:
         return
-    
     _ = config
 
     entities = []
