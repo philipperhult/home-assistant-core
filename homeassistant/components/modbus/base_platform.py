@@ -212,7 +212,7 @@ class BaseStructPlatform(BasePlatform, RestoreEntity):
             return str(v_temp)
         elif v_temp is None:
             return "0"
-        elif math.isnan(SupportsFloat(v_temp)):
+        elif v_temp is not None and math.isnan(v_temp):
             # NaN float detection replace with None
             return "0"
         return f"{float(v_temp):.{self._precision}f}"
