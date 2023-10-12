@@ -1,7 +1,7 @@
 """Config flow for HomeKit integration."""
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Coroutine
 from copy import deepcopy
 import random
 import re
@@ -399,7 +399,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ),
         )
 
-    async def __handle_user_camera_config(self, user_input: dict[str, Any]):
+    async def __handle_user_camera_config(self, user_input: dict[str, Any]) -> Coroutine[Any, Any, FlowResult]:
         entity_config = self.hk_options[CONF_ENTITY_CONFIG]
         for entity_id in self.included_cameras:
             if entity_id in user_input[CONF_CAMERA_COPY]:

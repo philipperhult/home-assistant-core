@@ -487,11 +487,9 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
 
     # Provide HomeAssistant reference to service registrars
     def with_hass(
-        fn: Callable[
-            [ServiceCall, HomeAssistant], Coroutine[Any, Any, ServiceResponse] | None
-        ]
-    ) -> Callable[[ServiceCall], None]:
-        async def caller(sc: ServiceCall) -> None:
+        fn: Callable[[ServiceCall, HomeAssistant], None]
+    ) -> Callable[[ServiceCall], Coroutine[Any, Any, None]]:
+        async def caller(sc: ServiceCall) -> Coroutine[Any, Any, None]:
             await fn(sc, hass)
 
         return caller
@@ -1015,13 +1013,13 @@ class HomeKit:
 
     def __handle_battery_configuration(
         self,
-        ent_reg_ent: er.RegistryEntry,
+        device_id: str,
         device_lookup: dict[str, dict[tuple[str, str | None], str]],
         state: State,
-    ):
+    ) -> None:
         if ATTR_BATTERY_CHARGING not in state.attributes:
             battery_charging_binary_sensor_entity_id = device_lookup[
-                ent_reg_ent.device_id
+                e.device_id
             ].get((BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.BATTERY_CHARGING))
             if battery_charging_binary_sensor_entity_id:
                 self._config.setdefault(state.entity_id, {}).setdefault(
@@ -1030,7 +1028,7 @@ class HomeKit:
                 )
 
         if ATTR_BATTERY_LEVEL not in state.attributes:
-            battery_sensor_entity_id = device_lookup[ent_reg_ent.device_id].get(
+            battery_sensor_entity_id = device_lookup[device_id].get(
                 (SENSOR_DOMAIN, SensorDeviceClass.BATTERY)
             )
             if battery_sensor_entity_id:
@@ -1040,12 +1038,12 @@ class HomeKit:
 
     def __handle_camera_configuration(
         self,
-        ent_reg_ent: er.RegistryEntry,
+        device_id: str,
         device_lookup: dict[str, dict[tuple[str, str | None], str]],
         state: State,
-    ):
+    ) -> None:
         if state.entity_id.startswith(f"{CAMERA_DOMAIN}."):
-            motion_binary_sensor_entity_id = device_lookup[ent_reg_ent.device_id].get(
+            motion_binary_sensor_entity_id = device_lookup[device_id].get(
                 (BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.MOTION)
             )
             if motion_binary_sensor_entity_id:
@@ -1053,7 +1051,7 @@ class HomeKit:
                     CONF_LINKED_MOTION_SENSOR,
                     motion_binary_sensor_entity_id,
                 )
-            doorbell_binary_sensor_entity_id = device_lookup[ent_reg_ent.device_id].get(
+            doorbell_binary_sensor_entity_id = device_lookup[device_id].get(
                 (BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.OCCUPANCY)
             )
             if doorbell_binary_sensor_entity_id:
@@ -1064,13 +1062,13 @@ class HomeKit:
 
     def __handle_humidifier_configuration(
         self,
-        ent_reg_ent: er.RegistryEntry,
+        device_id: str,
         device_lookup: dict[str, dict[tuple[str, str | None], str]],
         state: State,
-    ):
+    ) -> None:
         if state.entity_id.startswith(f"{HUMIDIFIER_DOMAIN}."):
             current_humidity_sensor_entity_id = device_lookup[
-                ent_reg_ent.device_id
+                device_id
             ].get((SENSOR_DOMAIN, SensorDeviceClass.HUMIDITY))
             if current_humidity_sensor_entity_id:
                 self._config.setdefault(state.entity_id, {}).setdefault(
@@ -1094,9 +1092,9 @@ class HomeKit:
         ):
             return
 
-        self.__handle_battery_configuration(ent_reg_ent, device_lookup, state)
-        self.__handle_camera_configuration(ent_reg_ent, device_lookup, state)
-        self.__handle_humidifier_configuration(ent_reg_ent, device_lookup, state)
+        self.__handle_battery_configuration(ent_reg_ent.device_id, device_lookup, state)
+        self.__handle_camera_configuration(ent_reg_ent.device_id, device_lookup, state)
+        self.__handle_humidifier_configuration(ent_reg_ent.device_id, device_lookup, state)
 
     async def _async_set_device_info_attributes(
         self,
