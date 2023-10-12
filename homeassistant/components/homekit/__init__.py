@@ -490,7 +490,7 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
         fn: Callable[[ServiceCall, HomeAssistant], Coroutine[Any, Any, None]]
     ) -> Callable[[ServiceCall], Coroutine[Any, Any, None]]:
         async def caller(sc: ServiceCall) -> Coroutine[Any, Any, None]:
-            await fn(sc, hass)
+            return await fn(sc, hass)
 
         return caller
 
