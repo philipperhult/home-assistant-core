@@ -37,7 +37,7 @@ LISTEN_READY_TIMEOUT = 30
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Matter from a config entry."""
     if use_addon := entry.data.get(CONF_USE_ADDON):
-        await _async_ensure_addon_running(hass, entry)
+        await _async_ensure_addon_running(hass)
 
     matter_client = MatterClient(entry.data[CONF_URL], async_get_clientsession(hass))
     try:
@@ -253,7 +253,7 @@ def _async_init_services(hass: HomeAssistant) -> None:
     )
 
 
-async def _async_ensure_addon_running(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_ensure_addon_running(hass: HomeAssistant) -> None:
     """Ensure that Matter Server add-on is installed and running."""
     addon_manager = _get_addon_manager(hass)
     try:

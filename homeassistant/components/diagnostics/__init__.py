@@ -246,7 +246,7 @@ class DownloadDiagnosticsView(http.HomeAssistantView):
             # Config entry diagnostics
             if info.config_entry_diagnostics is None:
                 return web.Response(status=HTTPStatus.NOT_FOUND)
-            data = await info.config_entry_diagnostics(hass, config_entry)
+            data = await info.config_entry_diagnostics(hass)
             filename = f"{DiagnosticsType.CONFIG_ENTRY}-{filename}"
             return await _async_get_json_file_response(
                 hass, data, filename, config_entry.domain, d_id
@@ -265,7 +265,7 @@ class DownloadDiagnosticsView(http.HomeAssistantView):
         if info.device_diagnostics is None:
             return web.Response(status=HTTPStatus.NOT_FOUND)
 
-        data = await info.device_diagnostics(hass, config_entry, device)
+        data = await info.device_diagnostics(hass, device)
         return await _async_get_json_file_response(
             hass, data, filename, config_entry.domain, d_id, sub_id
         )

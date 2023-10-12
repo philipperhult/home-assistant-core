@@ -40,7 +40,7 @@ def remove_serialization_type(data: dict[str, Any]) -> dict[str, Any]:
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, config_entry: ConfigEntry
+    hass: HomeAssistant
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     matter = get_matter(hass)
@@ -53,7 +53,7 @@ async def async_get_config_entry_diagnostics(
 
 
 async def async_get_device_diagnostics(
-    hass: HomeAssistant, config_entry: ConfigEntry, device: dr.DeviceEntry
+    hass: HomeAssistant, device: dr.DeviceEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a device."""
     matter = get_matter(hass)
