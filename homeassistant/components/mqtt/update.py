@@ -154,6 +154,31 @@ class MqttUpdate(MqttEntity, UpdateEntity, RestoreEntity):
             ).async_render_with_possible_json_value,
         }
 
+    def _json_version(self, json_payload) -> None:
+        if "installed_version" in json_payload:
+            self._attr_installed_version = json_payload["installed_version"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
+        if "latest_version" in json_payload:
+            self._attr_latest_version = json_payload["latest_version"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
+        if "title" in json_payload:
+            self._attr_title = json_payload["title"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
+        if "release_summary" in json_payload:
+            self._attr_release_summary = json_payload["release_summary"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
+        if "release_url" in json_payload:
+            self._attr_release_url = json_payload["release_url"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
+        if "entity_picture" in json_payload:
+            self._entity_picture = json_payload["entity_picture"]
+            get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+
     def _prepare_subscribe_topics(self) -> None:
         """(Re)Subscribe to topics."""
         topics: dict[str, Any] = {}
@@ -217,29 +242,7 @@ class MqttUpdate(MqttEntity, UpdateEntity, RestoreEntity):
                 )
                 json_payload["installed_version"] = str(payload)
 
-            if "installed_version" in json_payload:
-                self._attr_installed_version = json_payload["installed_version"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
-
-            if "latest_version" in json_payload:
-                self._attr_latest_version = json_payload["latest_version"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
-
-            if "title" in json_payload:
-                self._attr_title = json_payload["title"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
-
-            if "release_summary" in json_payload:
-                self._attr_release_summary = json_payload["release_summary"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
-
-            if "release_url" in json_payload:
-                self._attr_release_url = json_payload["release_url"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
-
-            if "entity_picture" in json_payload:
-                self._entity_picture = json_payload["entity_picture"]
-                get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
+            self._json_version(json_payload)
 
         add_subscription(topics, CONF_STATE_TOPIC, handle_state_message_received)
 

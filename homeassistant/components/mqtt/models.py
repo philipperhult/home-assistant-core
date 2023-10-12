@@ -204,6 +204,22 @@ class MqttValueTemplate:
         if entity:
             value_template.hass = entity.hass
 
+    def _get_values(self, variables: TemplateVarsType = None) -> dict[str, Any]:
+        values: dict[str, Any] = {}
+        if variables is not None:
+            values.update(variables)
+        if self._config_attributes is not None:
+            values.update(self._config_attributes)
+        if self._entity:
+            values[ATTR_ENTITY_ID] = self._entity.entity_id
+            values[ATTR_NAME] = self._entity.name
+            if not self._template_state and self._value_template.hass:
+                self._template_state = template.TemplateStateFromEntityId(
+                    self._value_template.hass, self._entity.entity_id
+                )
+            values[ATTR_THIS] = self._template_state
+        return values
+
     @callback
     def async_render_with_possible_json_value(
         self,
@@ -217,22 +233,7 @@ class MqttValueTemplate:
         if self._value_template is None:
             return payload
 
-        values: dict[str, Any] = {}
-
-        if variables is not None:
-            values.update(variables)
-
-        if self._config_attributes is not None:
-            values.update(self._config_attributes)
-
-        if self._entity:
-            values[ATTR_ENTITY_ID] = self._entity.entity_id
-            values[ATTR_NAME] = self._entity.name
-            if not self._template_state and self._value_template.hass:
-                self._template_state = template.TemplateStateFromEntityId(
-                    self._value_template.hass, self._entity.entity_id
-                )
-            values[ATTR_THIS] = self._template_state
+        values = self._get_values(variables)
 
         if default is PayloadSentinel.NONE:
             _LOGGER.debug(

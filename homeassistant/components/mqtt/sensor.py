@@ -219,6 +219,22 @@ class MqttSensor(MqttEntity, RestoreSensor):
             self._config.get(CONF_LAST_RESET_VALUE_TEMPLATE), entity=self
         ).async_render_with_possible_json_value
 
+    def _update_last_reset(self, msg: ReceiveMessage) -> None:
+        payload = self._last_reset_template(msg.payload)
+
+        if not payload:
+            _LOGGER.debug("Ignoring empty last_reset message from '%s'", msg.topic)
+            return
+        try:
+            last_reset = dt_util.parse_datetime(str(payload))
+            if last_reset is None:
+                raise ValueError
+            self._attr_last_reset = last_reset
+        except ValueError:
+            _LOGGER.warning(
+                "Invalid last_reset message '%s' from '%s'", msg.payload, msg.topic
+            )
+
     def _prepare_subscribe_topics(self) -> None:
         """(Re)Subscribe to topics."""
         topics: dict[str, dict[str, Any]] = {}
@@ -270,29 +286,13 @@ class MqttSensor(MqttEntity, RestoreSensor):
                 return
             self._attr_native_value = payload_datetime
 
-        def _update_last_reset(msg: ReceiveMessage) -> None:
-            payload = self._last_reset_template(msg.payload)
-
-            if not payload:
-                _LOGGER.debug("Ignoring empty last_reset message from '%s'", msg.topic)
-                return
-            try:
-                last_reset = dt_util.parse_datetime(str(payload))
-                if last_reset is None:
-                    raise ValueError
-                self._attr_last_reset = last_reset
-            except ValueError:
-                _LOGGER.warning(
-                    "Invalid last_reset message '%s' from '%s'", msg.payload, msg.topic
-                )
-
         @callback
         @log_messages(self.hass, self.entity_id)
         def message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT messages."""
             _update_state(msg)
             if CONF_LAST_RESET_VALUE_TEMPLATE in self._config:
-                _update_last_reset(msg)
+                self._update_last_reset(msg)
             get_mqtt_data(self.hass).state_write_requests.write_state_request(self)
 
         topics["state_topic"] = {

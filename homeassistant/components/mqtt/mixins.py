@@ -1125,11 +1125,7 @@ class MqttEntity(
     def config_schema() -> vol.Schema:
         """Return the config schema."""
 
-    def _set_entity_name(self, config: ConfigType) -> None:
-        """Help setting the entity name if needed."""
-        self._issue_key = None
-        entity_name: str | None | UndefinedType = config.get(CONF_NAME, UNDEFINED)
-        # Only set _attr_name if it is needed
+    def _process_entity_name(self, entity_name: str | None | UndefinedType) -> None:
         if entity_name is not UNDEFINED:
             self._attr_name = entity_name
         elif not self._default_to_device_class_name():
@@ -1140,6 +1136,14 @@ class MqttEntity(
             # don't set the name attribute and derive
             # the name from the device_class
             delattr(self, "_attr_name")
+
+    def _set_entity_name(self, config: ConfigType) -> None:
+        """Help setting the entity name if needed."""
+        self._issue_key = None
+        entity_name: str | None | UndefinedType = config.get(CONF_NAME, UNDEFINED)
+
+        self._process_entity_name(entity_name)
+
         if CONF_DEVICE in config:
             device_name: str
             if CONF_NAME not in config[CONF_DEVICE]:

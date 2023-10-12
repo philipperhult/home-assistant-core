@@ -207,6 +207,24 @@ class MqttWaterHeater(MqttTemperatureControlEntity, WaterHeaterEntity):
         """Return the config schema."""
         return DISCOVERY_SCHEMA
 
+    def _support(self) -> None:
+        support = WaterHeaterEntityFeature(0)
+
+        if (self._topic[CONF_TEMP_STATE_TOPIC] is not None) or (
+            self._topic[CONF_TEMP_COMMAND_TOPIC] is not None
+        ):
+            support |= WaterHeaterEntityFeature.TARGET_TEMPERATURE
+
+        if (self._topic[CONF_MODE_STATE_TOPIC] is not None) or (
+            self._topic[CONF_MODE_COMMAND_TOPIC] is not None
+        ):
+            support |= WaterHeaterEntityFeature.OPERATION_MODE
+
+        if self._topic[CONF_POWER_COMMAND_TOPIC] is not None:
+            support |= WaterHeaterEntityFeature.ON_OFF
+
+        self._attr_supported_features = support
+
     def _setup_from_config(self, config: ConfigType) -> None:
         """(Re)Setup the entity."""
         self._attr_operation_list = config[CONF_MODE_LIST]
@@ -261,21 +279,7 @@ class MqttWaterHeater(MqttTemperatureControlEntity, WaterHeaterEntity):
                 config.get(key), entity=self
             ).async_render
 
-        support = WaterHeaterEntityFeature(0)
-        if (self._topic[CONF_TEMP_STATE_TOPIC] is not None) or (
-            self._topic[CONF_TEMP_COMMAND_TOPIC] is not None
-        ):
-            support |= WaterHeaterEntityFeature.TARGET_TEMPERATURE
-
-        if (self._topic[CONF_MODE_STATE_TOPIC] is not None) or (
-            self._topic[CONF_MODE_COMMAND_TOPIC] is not None
-        ):
-            support |= WaterHeaterEntityFeature.OPERATION_MODE
-
-        if self._topic[CONF_POWER_COMMAND_TOPIC] is not None:
-            support |= WaterHeaterEntityFeature.ON_OFF
-
-        self._attr_supported_features = support
+        self._support()
 
     def _prepare_subscribe_topics(self) -> None:
         """(Re)Subscribe to topics."""

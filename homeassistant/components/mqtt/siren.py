@@ -217,6 +217,38 @@ class MqttSiren(MqttEntity, SirenEntity):
             entity=self,
         ).async_render_with_possible_json_value
 
+    def _payload_json(self, msg, payload) -> dict[str, Any]:
+        if not payload or payload == PAYLOAD_EMPTY_JSON:
+            _LOGGER.debug(
+                "Ignoring empty payload '%s' after rendering for topic %s",
+                payload,
+                msg.topic,
+            )
+        json_payload: dict[str, Any] = {}
+        if payload in [self._state_on, self._state_off, PAYLOAD_NONE]:
+            json_payload = {STATE: payload}
+        else:
+            try:
+                json_payload = json_loads_object(payload)
+                _LOGGER.debug(
+                    (
+                        "JSON payload detected after processing payload '%s' on"
+                        " topic %s"
+                    ),
+                    json_payload,
+                    msg.topic,
+                )
+            except JSON_DECODE_EXCEPTIONS:
+                _LOGGER.warning(
+                    (
+                        "No valid (JSON) payload detected after processing payload"
+                        " '%s' on topic %s"
+                    ),
+                    json_payload,
+                    msg.topic,
+                )
+        return json_payload
+
     def _prepare_subscribe_topics(self) -> None:
         """(Re)Subscribe to topics."""
 
@@ -225,37 +257,9 @@ class MqttSiren(MqttEntity, SirenEntity):
         def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
             payload = self._value_template(msg.payload)
-            if not payload or payload == PAYLOAD_EMPTY_JSON:
-                _LOGGER.debug(
-                    "Ignoring empty payload '%s' after rendering for topic %s",
-                    payload,
-                    msg.topic,
-                )
-                return
-            json_payload: dict[str, Any] = {}
-            if payload in [self._state_on, self._state_off, PAYLOAD_NONE]:
-                json_payload = {STATE: payload}
-            else:
-                try:
-                    json_payload = json_loads_object(payload)
-                    _LOGGER.debug(
-                        (
-                            "JSON payload detected after processing payload '%s' on"
-                            " topic %s"
-                        ),
-                        json_payload,
-                        msg.topic,
-                    )
-                except JSON_DECODE_EXCEPTIONS:
-                    _LOGGER.warning(
-                        (
-                            "No valid (JSON) payload detected after processing payload"
-                            " '%s' on topic %s"
-                        ),
-                        json_payload,
-                        msg.topic,
-                    )
-                    return
+
+            json_payload = self._payload_json(msg, payload)
+
             if STATE in json_payload:
                 if json_payload[STATE] == self._state_on:
                     self._attr_is_on = True
