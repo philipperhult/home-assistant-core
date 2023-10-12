@@ -487,7 +487,7 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
 
     # Provide HomeAssistant reference to service registrars
     def with_hass(
-        fn: Callable[[ServiceCall, HomeAssistant], None]
+        fn: Callable[[ServiceCall, HomeAssistant], Coroutine[Any, Any, None]]
     ) -> Callable[[ServiceCall], Coroutine[Any, Any, None]]:
         async def caller(sc: ServiceCall) -> Coroutine[Any, Any, None]:
             await fn(sc, hass)
@@ -1018,9 +1018,9 @@ class HomeKit:
         state: State,
     ) -> None:
         if ATTR_BATTERY_CHARGING not in state.attributes:
-            battery_charging_binary_sensor_entity_id = device_lookup[
-                e.device_id
-            ].get((BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.BATTERY_CHARGING))
+            battery_charging_binary_sensor_entity_id = device_lookup[device_id].get(
+                (BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.BATTERY_CHARGING)
+            )
             if battery_charging_binary_sensor_entity_id:
                 self._config.setdefault(state.entity_id, {}).setdefault(
                     CONF_LINKED_BATTERY_CHARGING_SENSOR,
@@ -1067,9 +1067,9 @@ class HomeKit:
         state: State,
     ) -> None:
         if state.entity_id.startswith(f"{HUMIDIFIER_DOMAIN}."):
-            current_humidity_sensor_entity_id = device_lookup[
-                device_id
-            ].get((SENSOR_DOMAIN, SensorDeviceClass.HUMIDITY))
+            current_humidity_sensor_entity_id = device_lookup[device_id].get(
+                (SENSOR_DOMAIN, SensorDeviceClass.HUMIDITY)
+            )
             if current_humidity_sensor_entity_id:
                 self._config.setdefault(state.entity_id, {}).setdefault(
                     CONF_LINKED_HUMIDITY_SENSOR,
@@ -1094,7 +1094,9 @@ class HomeKit:
 
         self.__handle_battery_configuration(ent_reg_ent.device_id, device_lookup, state)
         self.__handle_camera_configuration(ent_reg_ent.device_id, device_lookup, state)
-        self.__handle_humidifier_configuration(ent_reg_ent.device_id, device_lookup, state)
+        self.__handle_humidifier_configuration(
+            ent_reg_ent.device_id, device_lookup, state
+        )
 
     async def _async_set_device_info_attributes(
         self,

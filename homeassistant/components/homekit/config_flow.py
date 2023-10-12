@@ -399,7 +399,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ),
         )
 
-    async def __handle_user_camera_config(self, user_input: dict[str, Any]) -> Coroutine[Any, Any, FlowResult]:
+    async def __handle_user_camera_config(
+        self, user_input: dict[str, Any]
+    ) -> FlowResult:
         entity_config = self.hk_options[CONF_ENTITY_CONFIG]
         for entity_id in self.included_cameras:
             if entity_id in user_input[CONF_CAMERA_COPY]:
