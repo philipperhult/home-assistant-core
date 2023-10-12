@@ -1016,7 +1016,7 @@ class HomeKit:
     def __handle_battery_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[typle[str, str | None], str]],
+        device_lookup: dict[str, dict[tuple[str, str | None], str]],
         state: State,
     ):
         if ATTR_BATTERY_CHARGING not in state.attributes:
@@ -1065,7 +1065,7 @@ class HomeKit:
     def __handle_humidifier_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[typle[str, str | None], str]],
+        device_lookup: dict[str, dict[tuple[str, str | None], str]],
         state: State,
     ):
         if state.entity_id.startswith(f"{HUMIDIFIER_DOMAIN}."):
