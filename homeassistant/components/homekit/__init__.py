@@ -487,7 +487,9 @@ def _async_register_events_and_services(hass: HomeAssistant) -> None:
 
     # Provide HomeAssistant reference to service registrars
     def with_hass(
-        fn: Callable[[ServiceCall, HomeAssistant], Coroutine[Any, Any, ServiceResponse] | None]
+        fn: Callable[
+            [ServiceCall, HomeAssistant], Coroutine[Any, Any, ServiceResponse] | None
+        ]
     ) -> Callable[[ServiceCall], None]:
         async def caller(sc: ServiceCall) -> None:
             await fn(sc, hass)
@@ -1014,8 +1016,8 @@ class HomeKit:
     def __handle_battery_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[typle[str,str | None], str]],
-        state: State
+        device_lookup: dict[str, dict[typle[str, str | None], str]],
+        state: State,
     ):
         if ATTR_BATTERY_CHARGING not in state.attributes:
             battery_charging_binary_sensor_entity_id = device_lookup[
@@ -1036,12 +1038,11 @@ class HomeKit:
                     CONF_LINKED_BATTERY_SENSOR, battery_sensor_entity_id
                 )
 
-
     def __handle_camera_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[typle[str,str | None], str]],
-        state: State
+        device_lookup: dict[str, dict[tuple[str, str | None], str]],
+        state: State,
     ):
         if state.entity_id.startswith(f"{CAMERA_DOMAIN}."):
             motion_binary_sensor_entity_id = device_lookup[ent_reg_ent.device_id].get(
@@ -1061,12 +1062,11 @@ class HomeKit:
                     doorbell_binary_sensor_entity_id,
                 )
 
-
     def __handle_humidifier_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[typle[str,str | None], str]],
-        state: State
+        device_lookup: dict[str, dict[typle[str, str | None], str]],
+        state: State,
     ):
         if state.entity_id.startswith(f"{HUMIDIFIER_DOMAIN}."):
             current_humidity_sensor_entity_id = device_lookup[
@@ -1077,7 +1077,6 @@ class HomeKit:
                     CONF_LINKED_HUMIDITY_SENSOR,
                     current_humidity_sensor_entity_id,
                 )
-
 
     @callback
     def _async_configure_linked_sensors(
@@ -1098,7 +1097,6 @@ class HomeKit:
         self.__handle_battery_configuration(ent_reg_ent, device_lookup, state)
         self.__handle_camera_configuration(ent_reg_ent, device_lookup, state)
         self.__handle_humidifier_configuration(ent_reg_ent, device_lookup, state)
-
 
     async def _async_set_device_info_attributes(
         self,

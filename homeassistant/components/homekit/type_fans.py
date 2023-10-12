@@ -219,10 +219,7 @@ class Fan(HomeAccessory):
     def async_update_state(self, new_state):
         """Update fan after state change."""
 
-        state_map = {
-            STATE_ON: 1,
-            STATE_OFF: 0
-        }
+        state_map = {STATE_ON: 1, STATE_OFF: 0}
 
         direction_map = {
             DIRECTION_REVERSE: 1,
