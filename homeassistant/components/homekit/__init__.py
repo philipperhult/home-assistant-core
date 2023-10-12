@@ -1011,22 +1011,12 @@ class HomeKit:
         if self.driver:
             await self.driver.async_stop()
 
-    @callback
-    def _async_configure_linked_sensors(
+    def __handle_battery_configuration(
         self,
         ent_reg_ent: er.RegistryEntry,
-        device_lookup: dict[str, dict[tuple[str, str | None], str]],
-        state: State,
-    ) -> None:
-        if (
-            ent_reg_ent is None
-            or ent_reg_ent.device_id is None
-            or ent_reg_ent.device_id not in device_lookup
-            or (ent_reg_ent.device_class or ent_reg_ent.original_device_class)
-            in (BinarySensorDeviceClass.BATTERY_CHARGING, SensorDeviceClass.BATTERY)
-        ):
-            return
-
+        device_lookup: dict[str, dict[typle[str,str | None], str]],
+        state: State
+    ):
         if ATTR_BATTERY_CHARGING not in state.attributes:
             battery_charging_binary_sensor_entity_id = device_lookup[
                 ent_reg_ent.device_id
@@ -1046,6 +1036,13 @@ class HomeKit:
                     CONF_LINKED_BATTERY_SENSOR, battery_sensor_entity_id
                 )
 
+
+    def __handle_camera_configuration(
+        self,
+        ent_reg_ent: er.RegistryEntry,
+        device_lookup: dict[str, dict[typle[str,str | None], str]],
+        state: State
+    ):
         if state.entity_id.startswith(f"{CAMERA_DOMAIN}."):
             motion_binary_sensor_entity_id = device_lookup[ent_reg_ent.device_id].get(
                 (BINARY_SENSOR_DOMAIN, BinarySensorDeviceClass.MOTION)
@@ -1064,6 +1061,13 @@ class HomeKit:
                     doorbell_binary_sensor_entity_id,
                 )
 
+
+    def __handle_humidifier_configuration(
+        self,
+        ent_reg_ent: er.RegistryEntry,
+        device_lookup: dict[str, dict[typle[str,str | None], str]],
+        state: State
+    ):
         if state.entity_id.startswith(f"{HUMIDIFIER_DOMAIN}."):
             current_humidity_sensor_entity_id = device_lookup[
                 ent_reg_ent.device_id
@@ -1073,6 +1077,28 @@ class HomeKit:
                     CONF_LINKED_HUMIDITY_SENSOR,
                     current_humidity_sensor_entity_id,
                 )
+
+
+    @callback
+    def _async_configure_linked_sensors(
+        self,
+        ent_reg_ent: er.RegistryEntry,
+        device_lookup: dict[str, dict[tuple[str, str | None], str]],
+        state: State,
+    ) -> None:
+        if (
+            ent_reg_ent is None
+            or ent_reg_ent.device_id is None
+            or ent_reg_ent.device_id not in device_lookup
+            or (ent_reg_ent.device_class or ent_reg_ent.original_device_class)
+            in (BinarySensorDeviceClass.BATTERY_CHARGING, SensorDeviceClass.BATTERY)
+        ):
+            return
+
+        self.__handle_battery_configuration(ent_reg_ent, device_lookup, state)
+        self.__handle_camera_configuration(ent_reg_ent, device_lookup, state)
+        self.__handle_humidifier_configuration(ent_reg_ent, device_lookup, state)
+
 
     async def _async_set_device_info_attributes(
         self,

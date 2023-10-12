@@ -218,18 +218,29 @@ class Fan(HomeAccessory):
     @callback
     def async_update_state(self, new_state):
         """Update fan after state change."""
+
+        state_map = {
+            STATE_ON: 1,
+            STATE_OFF: 0
+        }
+
+        direction_map = {
+            DIRECTION_REVERSE: 1,
+            DIRECTION_FORWARD: 0,
+        }
+
         # Handle State
         state = new_state.state
         attributes = new_state.attributes
-        if state in (STATE_ON, STATE_OFF):
-            self._state = 1 if state == STATE_ON else 0
+        if state in state_map:
+            self._state = state_map.get(state)
             self.char_active.set_value(self._state)
 
         # Handle Direction
         if self.char_direction is not None:
             direction = new_state.attributes.get(ATTR_DIRECTION)
-            if direction in (DIRECTION_FORWARD, DIRECTION_REVERSE):
-                hk_direction = 1 if direction == DIRECTION_REVERSE else 0
+            if direction in direction_map:
+                hk_direction = direction_map.get(direction)
                 self.char_direction.set_value(hk_direction)
 
         # Handle Speed
@@ -254,11 +265,10 @@ class Fan(HomeAccessory):
                 self.char_speed.set_value(percentage)
 
         # Handle Oscillating
-        if self.char_swing is not None:
-            oscillating = attributes.get(ATTR_OSCILLATING)
-            if isinstance(oscillating, bool):
-                hk_oscillating = 1 if oscillating else 0
-                self.char_swing.set_value(hk_oscillating)
+        oscillating = attributes.get(ATTR_OSCILLATING)
+        if self.char_swing is not None and isinstance(oscillating, bool):
+            hk_oscillating = int(oscillating)
+            self.char_swing.set_value(hk_oscillating)
 
         current_preset_mode = attributes.get(ATTR_PRESET_MODE)
         if self.char_target_fan_state is not None:
@@ -268,5 +278,5 @@ class Fan(HomeAccessory):
 
         # Handle multiple preset modes
         for preset_mode, char in self.preset_mode_chars.items():
-            hk_value = 1 if preset_mode == current_preset_mode else 0
+            hk_value = int(preset_mode == current_preset_mode)
             char.set_value(hk_value)
